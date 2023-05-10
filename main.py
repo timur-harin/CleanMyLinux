@@ -1,9 +1,17 @@
 import os
+os.system("sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-3.0 glade pip")
+os.system("pip install psutil")
+
 import subprocess
 import shutil
 import time
 
 import psutil
+
+import gi
+import subprocess
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 
 def remove_files(files_to_remove):
@@ -138,9 +146,45 @@ def monitor_system():
     # ...
 
 
-if __name__ == "__main__":
-    remove_junk()
-    remove_old_files('/')
-    remove_malware()
-    tune_system()
-    monitor_system()
+
+builder = Gtk.Builder()
+builder.add_from_file("window.glade")
+
+class GUI:
+    def __init__(self):
+
+        self.builder = builder
+        self.builder.connect_signals(self)
+        
+        self.cache_button = self.builder.get_object("cache_button")
+        self.old_button = self.builder.get_object("old_button")
+        self.speed_button = self.builder.get_object("speed_button")
+        self.malware_button = self.builder.get_object("malware_button")
+        
+        self.cache_button.connect("clicked", self.clear_cache)
+        self.old_button.connect("clicked", self.remove_old)
+        self.speed_button.connect("clicked", self.speed_up)
+        self.malware_button.connect("clicked", self.check_malware)
+        
+        self.window = self.builder.get_object("main_window")
+        self.window.show_all()
+
+    def clear_cache(self, button):
+        remove_junk()
+
+        print("Cleared cache")
+
+    def remove_old(self, button):
+        remove_old_files('/')
+        print("Removed old files")
+
+    def speed_up(self, button):
+        tune_system()
+        print("Speed up")
+
+    def check_malware(self, button):
+        remove_malware()
+        print("Checking malware")
+
+gui = GUI()
+Gtk.main()
