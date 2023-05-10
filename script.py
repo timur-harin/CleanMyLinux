@@ -5,14 +5,16 @@ import time
 
 import psutil
 
+
 def remove_files(files_to_remove):
     ind = 1
     print("The following files can be removed:")
     for file in files_to_remove:
         print(f'{ind}. {file}')
         ind += 1
-    user_input = input("What files should be deleted? Print 0, you want to remove all files, -1 if nothing should be deleted."
-                       "In other case list indexes of files to be deleted and put commas between them.")
+    user_input = input(
+        "What files should be deleted? Print 0, you want to remove all files, -1 if nothing should be deleted."
+        "In other case list indexes of files to be deleted and put commas between them.")
     user_input = user_input.replace(" ", "")
     files = user_input.split(',')
     if files[0] == '-1':
@@ -20,24 +22,22 @@ def remove_files(files_to_remove):
     elif files[0] == '0':
         for index in range(len(files_to_remove)):
             try:
-                if user_input.lower() == "y":
-                    if os.path.isfile(files_to_remove[index]):
-                        os.remove(files_to_remove[index])
-                    elif os.path.isdir(files_to_remove[index]):
-                        shutil.rmtree(files_to_remove[int(index)])
+                if os.path.isfile(files_to_remove[index]):
+                    os.remove(files_to_remove[index])
+                elif os.path.isdir(files_to_remove[index]):
+                    shutil.rmtree(files_to_remove[int(index)])
             except:
                 print(f"Couldn't remove file {files_to_remove[index]}")
     else:
         for file in files:
-           try:
-               index = int(file) - 1
-               if user_input.lower() == "y":
-                  if os.path.isfile(files_to_remove[index]):
-                      os.remove(files_to_remove[index])
-                  elif os.path.isdir(files_to_remove[index]):
-                      shutil.rmtree(files_to_remove[index])
-           except:
-               print(f"Couldn't remove file {files_to_remove[int(file) - 1]}")
+            try:
+                index = int(file) - 1
+                if os.path.isfile(files_to_remove[index]):
+                    os.remove(files_to_remove[index])
+                elif os.path.isdir(files_to_remove[index]):
+                    shutil.rmtree(files_to_remove[index])
+            except:
+                print(f"Couldn't remove file {files_to_remove[int(file) - 1]}")
 
 
 def remove_junk():
@@ -59,7 +59,7 @@ def remove_junk():
 
 
 file_extensions = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".jpg", ".jpeg", ".png",
-                       ".gif", ".mp3", ".mp4", ".avi", ".mov", ".zip", ".tar", ".gz"]
+                   ".gif", ".mp3", ".mp4", ".avi", ".mov", ".zip", ".tar", ".gz"]
 
 
 def is_old_file(path):
@@ -75,19 +75,19 @@ def is_old_file(path):
     except:
         return False
 
+
 def remove_old_files(path):
     exclude_list = ['/var', '/usr', '/etc/passwd', '/etc/shadow', '/snap']
 
     deletable_files = []
     for root, dirs, files in os.walk(path):
-        # Exclude directories or files in the exclude list
-        dirs[:] = [d for d in dirs if os.path.join(root, d) not in exclude_list]
+        # Exclude files in the exclude list
         files[:] = [f for f in files if os.path.join(root, f) not in exclude_list]
 
         for name in files:
             file_path = os.path.join(root, name)
             if is_old_file(file_path):
-                    deletable_files.append(file_path)
+                deletable_files.append(file_path)
     remove_files(deletable_files)
 
 
@@ -112,6 +112,7 @@ def remove_malware():
             else:
                 print("File not removed.")
 
+
 def tune_system():
     # Adjust CPU frequency
     subprocess.run(["sudo", "cpupower", "frequency-set", "-g", "performance"])
@@ -121,6 +122,7 @@ def tune_system():
 
     # Benchmark the system
     # ...
+
 
 def monitor_system():
     # Monitor CPU usage
@@ -134,6 +136,7 @@ def monitor_system():
 
     # Analyze system logs
     # ...
+
 
 if __name__ == "__main__":
     remove_junk()
