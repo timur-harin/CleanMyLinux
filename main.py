@@ -90,11 +90,12 @@ def remove_old_files(path):
     deletable_files = []
     for root, dirs, files in os.walk(path):
         # Exclude files in the exclude list
+        dirs[:] = [d for d in dirs if os.path.join(root, d) not in exclude_list]
         files[:] = [f for f in files if os.path.join(root, f) not in exclude_list]
 
         for name in files:
             file_path = os.path.join(root, name)
-            if is_old_file(file_path):
+            if is_old_file(file_path) and '/snap/' not in file_path and './' not in file_path:
                 deletable_files.append(file_path)
     remove_files(deletable_files)
 
