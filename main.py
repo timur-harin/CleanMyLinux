@@ -52,12 +52,12 @@ def remove_junk():
     # Create a list of files to be removed
     files_to_remove = []
     # Add old kernels to the list
-    output = subprocess.check_output(["sudo", "-S", "apt-get", "autoremove", "--dry-run", "-y"])
+    output = subprocess.check_output(["sudo", "apt-get", "autoremove", "--dry-run", "-y"])
     for line in output.decode().split("\n"):
         if line.startswith("Removing") and "/boot" in line:
             files_to_remove.append(line.split()[-1])
     # Add unused packages to the list
-    output = subprocess.check_output(["sudo", "-S", "apt-get", "clean", "--dry-run", "-y"])
+    output = subprocess.check_output(["sudo", "apt-get", "clean", "--dry-run", "-y"])
     for line in output.decode().split("\n"):
         if line.startswith("Cleaning") and "/var/cache/apt/archives" in line:
             files_to_remove.append(line.split()[-1])
@@ -90,11 +90,12 @@ def remove_old_files(path):
     deletable_files = []
     for root, dirs, files in os.walk(path):
         # Exclude files in the exclude list
+        dirs[:] = [d for d in dirs if os.path.join(root, d) not in exclude_list]
         files[:] = [f for f in files if os.path.join(root, f) not in exclude_list]
 
         for name in files:
             file_path = os.path.join(root, name)
-            if is_old_file(file_path):
+            if is_old_file(file_path) and '/snap/' not in file_path and './' not in file_path:
                 deletable_files.append(file_path)
     remove_files(deletable_files)
 
