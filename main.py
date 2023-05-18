@@ -101,17 +101,26 @@ def remove_old_files(path):
 
 def remove_malware():
     # Scan for malware using Clam Antivirus
-    scan_result = subprocess.check_output(['clamscan', '-r', '/'], stderr=subprocess.STDOUT)
+    scan_result = None
+    try:
+        scan_result = subprocess.check_output(['clamscan', '-r', '/'], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        output = e.output
+        print(output)
 
-    # Parse the scan result to get a list of infected files
-    infected_files = []
-    for line in scan_result.splitlines():
-        if 'FOUND' in str(line):
-            infected_files.append(str(line).split(': ')[0])
+    if scan_result is not None:
+        # Parse the scan result to get a list of infected files
+        infected_files = []
+        for line in scan_result.splitlines():
+            if 'FOUND' in str(line):
+                infected_files.append(str(line).split(': ')[0])
 
-    # Remove any infected files
-    for file_path in infected_files:
-        os.remove(file_path)
+        # Remove any infected files
+        for file_path in infected_files:
+            try:
+                os.remove(file_path)
+            except:
+                print(f'Cannot remove infected file: {file_path}')
 
 
 def tune_system():
