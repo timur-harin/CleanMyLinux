@@ -1,7 +1,4 @@
 import os
-os.system("sudo apt-get install python3-gi python3-gi-cairo gir1.2-gtk-3.0 glade pip")
-os.system("pip install psutil")
-
 import subprocess
 import shutil
 import time
@@ -13,6 +10,9 @@ import subprocess
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
+
+os.system("sudo -S apt-get install python3-gi python3-gi-cairo gir1.2-gtk-3.0 glade pip clamav clamav-daemon -y")
+os.system("pip install psutil")
 
 def remove_files(files_to_remove):
     ind = 1
@@ -52,12 +52,12 @@ def remove_junk():
     # Create a list of files to be removed
     files_to_remove = []
     # Add old kernels to the list
-    output = subprocess.check_output(["sudo", "apt-get", "autoremove", "--dry-run", "-y"])
+    output = subprocess.check_output(["sudo", "-S", "apt-get", "autoremove", "--dry-run", "-y"])
     for line in output.decode().split("\n"):
         if line.startswith("Removing") and "/boot" in line:
             files_to_remove.append(line.split()[-1])
     # Add unused packages to the list
-    output = subprocess.check_output(["sudo", "apt-get", "clean", "--dry-run", "-y"])
+    output = subprocess.check_output(["sudo", "-S", "apt-get", "clean", "--dry-run", "-y"])
     for line in output.decode().split("\n"):
         if line.startswith("Cleaning") and "/var/cache/apt/archives" in line:
             files_to_remove.append(line.split()[-1])
@@ -100,33 +100,41 @@ def remove_old_files(path):
 
 
 def remove_malware():
-    # Scan for malware
-    output = subprocess.check_output(["sudo", "clamscan", "-r", "/", "--infected"], stderr=subprocess.DEVNULL)
-    infected_files = output.decode().strip().split("\n")
-    if infected_files:
-        # Create a list of infected files to be removed
-        files_to_remove = []
-        for file in infected_files:
-            files_to_remove.append(file.split()[-1])
-        # Prompt the user to confirm the removal of each file
-        for file in files_to_remove:
-            print("The following infected file will be removed:", file)
-            user_input = input("Do you want to remove it? (y/n) ")
-            if user_input.lower() == "y":
-                if os.path.isfile(file):
-                    os.remove(file)
-                elif os.path.isdir(file):
-                    shutil.rmtree(file)
-            else:
-                print("File not removed.")
+    # Scan for malware using Clam Antivirus
+    scan_result = subprocess.check_output(['clamscan', '-r', '/'], stderr=subprocess.STDOUT)
+
+    # Parse the scan result to get a list of infected files
+    infected_files = []
+    for line in scan_result.splitlines():
+        if 'FOUND' in str(line):
+            infected_files.append(str(line).split(': ')[0])
+
+    # Remove any infected files
+    for file_path in infected_files:
+        os.remove(file_path)
 
 
 def tune_system():
-    # Adjust CPU frequency
-    subprocess.run(["sudo", "cpupower", "frequency-set", "-g", "performance"])
+    try:
+        # Adjust CPU frequency
+        subprocess.run(["sudo", "-S", "cpupower", "frequency-set", "-g", "performance"])
 
-    # Optimize startup
-    subprocess.run(["sudo", "systemctl", "disable", "app.service"])
+        # Optimize startup
+        subprocess.run(["sudo", "-S", "systemctl", "disable", "app.service"])
+    except Exception:
+        print("Cannot power the CPU. Trying to kill zombie processes...")
+    
+    # Kill zombie processes
+    processes = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+    output, error = processes.communicate()
+
+    lines = output.splitlines()
+    for line in lines:
+        if 'Z' in str(line):
+            # Get the PID of the zombie process
+            pid = int(line.split(None, 1)[0])
+            # Kill the zombie process
+            subprocess.call(['kill', '-9', str(pid)])
 
     # Benchmark the system
     # ...
