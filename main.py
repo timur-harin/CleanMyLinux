@@ -95,7 +95,7 @@ def remove_old_files(path):
 
         for name in files:
             file_path = os.path.join(root, name)
-            if is_old_file(file_path) and '/snap/' not in file_path and './' not in file_path:
+            if is_old_file(file_path) and '/snap/' not in file_path and '/.' not in file_path:
                 deletable_files.append(file_path)
     remove_files(deletable_files)
 
@@ -108,6 +108,7 @@ def remove_malware():
     except subprocess.CalledProcessError as e:
         output = e.output
         print(output)
+
 
     if scan_result is not None:
         # Parse the scan result to get a list of infected files
@@ -204,5 +205,8 @@ class GUI:
         remove_malware()
         print("Checking malware")
 
-gui = GUI()
-Gtk.main()
+try:
+   gui = GUI()
+   Gtk.main()
+except KeyboardInterrupt:
+   print('Program finished')
