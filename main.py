@@ -127,13 +127,18 @@ def remove_malware():
 
 def tune_system():
     try:
-        # Adjust CPU frequency
-        subprocess.run(["sudo", "-S", "cpupower", "frequency-set", "-g", "performance"])
+        # Optimize using preload
+        subprocess.run(["sudo", "systemctl", "enable", "--now", "preload"])
 
-        # Optimize startup
-        subprocess.run(["sudo", "-S", "systemctl", "disable", "app.service"])
+        # Clear caches and thumbnail folders
+        subprocess.run(["rm", "-rf", "~/.cache"])
+        subprocess.run(["rm", "-rf", "~/.thumbs"])
+
+        # Remove junks
+        remove_junk()
+
     except Exception:
-        print("Cannot power the CPU. Trying to kill zombie processes...")
+        print("Trying to kill zombie processes...")
     
     # Kill zombie processes
     processes = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
